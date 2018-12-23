@@ -4,14 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-requestium = "*"
+requests = "*"
 
 [dev-packages]
-ipython = "*"
-nuitka = "*"
 
 [requires]
 python_version = "3.7"
-
-[scripts]
-compile = "python -m nuitka main.py --follow-import-to=requestium"

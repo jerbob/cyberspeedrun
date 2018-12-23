@@ -2,7 +2,7 @@ from json import load
 from time import time
 from threading import Thread
 
-from requestium import Session
+from requests_html import HTMLSession
 
 
 go_endpoint = 'https://go.joincyberdiscovery.com'
@@ -10,18 +10,14 @@ go_endpoint = 'https://go.joincyberdiscovery.com'
 with open('solutions.json') as file:
     solutions = load(file)
 
-session = Session(
-    webdriver_options={'arguments': ['headless']},
-    webdriver_path='./chromedriver',
-    browser='chrome',
-)
+session = HTMLSession()
 
 
 def find_csrf(response):
     """Locate the CSRF token, given a response object."""
-    return response.xpath(
+    return response.html.xpath(
         '//*[@type="hidden"]/@value'
-    ).extract_first()
+    )[0]
 
 
 def post_flag(flag, challenge, csrf):
@@ -36,17 +32,6 @@ def post_flag(flag, challenge, csrf):
             'csrf': csrf
         }
     )
-
-
-def solve_lx01():
-    """Solve challenge LX01 by evaluating JavaScript."""
-    print('[?] Attempting challenge LX01...')
-    session.driver.get('https://go.joincyberdiscovery.com/challenges/LX01')
-    flag = session.driver.execute_script('return i7 + c7 + p7')
-    csrf = session.driver.find_element_by_xpath(
-        '//*[@type="hidden"]'
-    ).get_attribute('value')
-    post_flag(flag, 'LX01', csrf)
 
 
 def solve_challenge(challenge, solution):
@@ -77,14 +62,8 @@ def main(username):
         data={'csrf': csrf, 'name': username}
     )
     print(f'[!] Registered as {username}.\n')
-    print('[?] Starting Chrome Driver...')
-    session.transfer_session_cookies_to_driver()
     start = time()
     print(f'[!] Started timer.\n')
-
-    thread = Thread(target=solve_lx01)
-    threads.append(thread)
-    thread.start()
 
     for challenge, solution in solutions.items():
         print(f'[?] Attempting challenge {challenge}...')
