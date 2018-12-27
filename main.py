@@ -1,23 +1,23 @@
 from json import load
+from re import compile
 from time import time
 from threading import Thread
 
-from requests_html import HTMLSession
+from requests import Session
 
 
+csrf_pattern = compile(r'name="csrf" value="([a-z0-9]+)"')
 go_endpoint = 'https://go.joincyberdiscovery.com'
 
 with open('solutions.json') as file:
     solutions = load(file)
 
-session = HTMLSession()
+session = Session()
 
 
 def find_csrf(response):
     """Locate the CSRF token, given a response object."""
-    return response.html.xpath(
-        '//*[@type="hidden"]/@value'
-    )[0]
+    return csrf_pattern.search(response.content.decode()).group(1)
 
 
 def post_flag(flag, challenge, csrf):
